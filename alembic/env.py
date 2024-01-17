@@ -1,8 +1,13 @@
 import asyncio
-import os
+import os  # Импортируем модуль стандартной библиотеки для работы с ОС.
 from logging.config import fileConfig
 
+# Импортируем функцию для чтения файлов с переменными окружения
 from dotenv import load_dotenv
+# из библиотеки python-dotenv. Эта библиотека была установлена
+# вместе с uvicorn.
+
+
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -11,13 +16,19 @@ from alembic import context
 
 from app.core.base import Base
 
+
+# Загрузим файл .env в переменные окружения.
 load_dotenv('.env')
+# Библиотека python-dotenv умеет находить файл в «вышестоящих» каталогах,
+# поэтому полный путь указывать не обязательно.
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option('sqlalchemy.url', os.environ['DATABASE_URL'])
+config.set_main_option('sqlalchemy.url', os.environ['DATABASE_URL'])  # noqa Установим для переменной sqlalchemy.url значение из нашего .env файла.
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
