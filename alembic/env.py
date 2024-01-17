@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from alembic import context
 
-from app.core.base import Base
+from app.core.base import Base  # УНИВЕРСАЛЬНЫЙ Импорт моделей в Alembic
 
 
 # Загрузим файл .env в переменные окружения.
