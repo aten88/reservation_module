@@ -1,5 +1,3 @@
-# app/api/meeting_room.py
-
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
