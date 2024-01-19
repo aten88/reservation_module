@@ -82,3 +82,12 @@ async def update_meeting_room(
     await session.commit()
     await session.refresh(db_room)
     return db_room
+
+
+async def delete_meeting_room(
+        db_room: MeetingRoom,
+        session: AsyncSession,
+) -> MeetingRoom:
+    await session.delete(db_room)
+    await session.commit()
+    return db_room
