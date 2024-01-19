@@ -1,6 +1,5 @@
 # app/crud/meeting_room.py
-from typing import Optional
-
+from typing import Optional, List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,3 +47,10 @@ async def get_room_id_by_name(
     )
     db_room_id = db_room_id.scalars().first()
     return db_room_id
+
+
+async def read_all_rooms_from_db(session: AsyncSession) -> List[MeetingRoom]:
+    all_rooms = await session.execute(
+        select(MeetingRoom)
+    )
+    return all_rooms.scalars().all()
