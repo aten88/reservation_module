@@ -1,11 +1,12 @@
 # app/crud/meeting_room.py
+from fastapi.encoders import jsonable_encoder
 from typing import Optional, List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Импортируем sessionmaker из файла с настройками БД.
 from app.models.meeting_room import MeetingRoom
-from app.schemas.meeting_room import MeetingRoomCreate
+from app.schemas.meeting_room import MeetingRoomCreate, MeetingRoomUpdate
 
 
 # Функция работает с асинхронной сессией,
@@ -54,3 +55,30 @@ async def read_all_rooms_from_db(session: AsyncSession) -> List[MeetingRoom]:
         select(MeetingRoom)
     )
     return all_rooms.scalars().all()
+
+
+async def get_meeting_room_by_id(
+        room_id: int,
+        session: AsyncSession,
+) -> Optional[MeetingRoom]:
+    db_room = await session.execute(
+        select(MeetingRoom).where(MeetingRoom.id == room_id)
+    )
+    db_room = db_room.scalars().first()
+    return db_room
+
+
+async def update_meeting_room(
+        db_room: MeetingRoom,
+        room_in: MeetingRoomUpdate,
+        session: AsyncSession,
+) -> MeetingRoom:
+    obj_data = jsonable_encoder(db_room)
+    update_data = room_in.dict(exclude_unset=True)
+    for field in obj_data:
+        if field in update_data:
+            setattr(db_room, field, update_data[field])
+    session.add(db_room)
+    await session.commit()
+    await session.refresh(db_room)
+    return db_room
