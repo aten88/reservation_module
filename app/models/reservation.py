@@ -7,3 +7,8 @@ class Reservation(Base):
     from_reserve = Column(DateTime)
     to_reserve = Column(DateTime)
     meetingroom_id = Column(Integer, ForeignKey('meetingroom.id'))
+
+    def __repr__(self) -> str:
+        return (
+            f'Уже забронировано с {self.from_reserve} до {self.to_reserve}'
+        )
