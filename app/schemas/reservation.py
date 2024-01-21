@@ -1,11 +1,14 @@
 from datetime import datetime
 
-from pydantic import BaseModel, validator, root_validator
+from pydantic import BaseModel, Extra, validator, root_validator
 
 
 class ReservationBase(BaseModel):
     from_reserve: datetime
     to_reserve: datetime
+
+    class Config:
+        extra = Extra.forbid
 
 
 class ReservationUpdate(ReservationBase):
