@@ -13,6 +13,7 @@ from app.schemas.meeting_room import (
 from app.api.validators import check_meeting_room_exist, check_name_duplicate
 from app.crud.reservation import reservation_crud
 from app.schemas.reservation import ReservationDB
+from app.core.user import current_superuser
 
 
 router = APIRouter()
@@ -22,11 +23,13 @@ router = APIRouter()
         '/',
         response_model=MeetingRoomDB,
         response_model_exclude_none=True,
+        dependencies=[Depends(current_superuser)],
     )
 async def create_new_meeting_room(
         meeting_room: MeetingRoomCreate,
         session: AsyncSession = Depends(get_async_session),
 ):
+    """ Только для суперюзеров. """
     await check_name_duplicate(meeting_room.name, session)
     new_room = await meeting_room_crud.create(meeting_room, session)
     return new_room
@@ -35,11 +38,13 @@ async def create_new_meeting_room(
 @router.get(
         '/',
         response_model=List[MeetingRoomDB],
-        response_model_exclude_none=True
+        response_model_exclude_none=True,
+        dependencies=[Depends(current_superuser)],
     )
 async def get_all_meeting_rooms(
     session: AsyncSession = Depends(get_async_session)
 ):
+    """ Только для суперюзеров. """
     all_rooms = await meeting_room_crud.get_multi(session)
     if all_rooms is None:
         raise HTTPException(
@@ -53,12 +58,14 @@ async def get_all_meeting_rooms(
         '/{meeting_room_id}',
         response_model=MeetingRoomDB,
         response_model_exclude_none=True,
+        dependencies=[Depends(current_superuser)],
 )
 async def partially_update_meeting_room(
     meeting_room_id: int,
     obj_in: MeetingRoomUpdate,
     session: AsyncSession = Depends(get_async_session),
 ):
+    """ Только для суперюзеров. """
     meeting_room = await check_meeting_room_exist(meeting_room_id, session)
 
     if obj_in.name is not None:
@@ -74,11 +81,13 @@ async def partially_update_meeting_room(
         '/{meeting_room_id}',
         response_model=MeetingRoomDB,
         response_model_exclude_none=True,
+        dependencies=[Depends(current_superuser)],
 )
 async def remove_meeting_room(
     meeting_room_id: int,
     session: AsyncSession = Depends(get_async_session),
 ):
+    """ Только для суперюзеров. """
     meeting_room = await check_meeting_room_exist(meeting_room_id, session)
     meeting_room = await meeting_room_crud.remove(meeting_room, session)
     return meeting_room
@@ -86,7 +95,9 @@ async def remove_meeting_room(
 
 @router.get(
         '/{meeting_room_id}/reservations',
-        response_model=list[ReservationDB])
+        response_model=list[ReservationDB],
+        response_model_exclude={'user_id'},
+    )
 async def get_reservations_for_room(
         meeting_room_id: int,
         session: AsyncSession = Depends(get_async_session),

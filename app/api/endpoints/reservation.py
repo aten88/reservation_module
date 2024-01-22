@@ -53,9 +53,14 @@ async def get_all_reservations(
 )
 async def delete_reservation(
     reservation_id: int,
-    session: AsyncSession = Depends(get_async_session)
+    session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_user),
 ):
-    reservation = await check_reservation_before_edit(reservation_id, session)
+    """Для суперюзеров или создателей объекта бронирования."""
+    reservation = await check_reservation_before_edit(
+        reservation_id,
+        session, user
+    )
 
     reservation = await reservation_crud.remove(reservation, session)
 
@@ -70,9 +75,11 @@ async def update_reservation(
     reservation_id: int,
     obj_in: ReservationUpdate,
     session: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_user),
 ):
+    """Для суперюзеров или создателей объекта бронирования."""
     reservation = await check_reservation_before_edit(
-        reservation_id, session
+        reservation_id, session, user
     )
     await check_reservation_intersections(
         **obj_in.dict(),
@@ -86,3 +93,19 @@ async def update_reservation(
         session=session
     )
     return reservation
+
+
+@router.get(
+        '/my_reservations',
+        response_model=list[ReservationDB],
+        response_model_exclude={'user_id'},
+    )
+async def get_my_reservations(
+        session: AsyncSession = Depends(get_async_session),
+        user: User = Depends(current_user)
+):
+    """Получает список всех бронирований для текущего пользователя."""
+    reservations = await reservation_crud.get_by_user(
+        session=session, user=user
+    )
+    return reservations
